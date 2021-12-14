@@ -19,6 +19,14 @@ const productSelect = document.querySelector(".productSelect");
  * [shoppingCart DOM-購物車table]
  */
 const shoppingCart = document.querySelector(".shoppingCart-table");
+/**
+ * [oderForm DOM-訂單表格]
+ */
+const oderForm = document.querySelector(".orderInfo-form");
+/**
+ * [subOderBtn DOM-送出訂單按鈕]
+ */
+const subOderBtn = document.querySelector(".orderInfo-btn")
 
 // api function -------------------------------------------------------
 /**
@@ -86,7 +94,7 @@ function deleteAllCartList() {
 		)
 		.then(function (response) {
 			alert(`購物車已清空`);
-			shoppingCart.innerHTML = "";
+			getCartList();
 		});
 }
 
@@ -126,6 +134,32 @@ function editCartNum(editId, editNum) {
 		.then(function (response) {
 			// console.log(response.data);
 			getCartList();
+		});
+}
+
+/**
+ * [createOrder 建立訂單]
+ *
+ * @param   {[object]}  user  [user 訂單資料]
+ */
+function createOrder(user) {
+	axios
+		.post(
+			`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/orders`,
+			{
+				data: {
+					user: user,
+				},
+			}
+		)
+		.then(function (response) {
+			console.log(response.data);
+			alert("訂單已送出");
+			getCartList();
+			oderForm.reset();
+		})
+		.catch(function (error) {
+			console.log(error.response.data);
 		});
 }
 
@@ -191,12 +225,40 @@ shoppingCart.addEventListener("click", (e) => {
 	let editNum = parseInt(e.target.dataset.editnum);
 	let editTitle = e.target.dataset.edittitle;
 	if (editId != undefined && editNum != undefined && editTitle != undefined) {
-		if(editNum == 0){
+		if (editNum == 0) {
 			deleteCartItem(editId, editTitle);
 		}
 		editCartNum(editId, editNum);
 	}
 });
+
+subOderBtn.addEventListener('click', () => {
+	let user = {};
+	const name = document.querySelector('#customerName').value
+	const phone = document.querySelector('#customerPhone').value
+	const email = document.querySelector('#customerEmail').value
+	const address = document.querySelector('#customerAddress').value
+	const tradeWay = document.querySelector('#tradeWay').value
+	if(
+		name == "" || phone == "" || email == "" || address == "" || tradeWay == ""
+	){
+		alert('訂單資料填寫不完全')
+	}
+	else {
+		user.name = name;
+		user.tel = phone;
+		user.email = email;
+		user.address = address;
+		user.payment = tradeWay;
+		// 判斷購物車裡是否有商品
+		if(shoppingCart.dataset.haveproduct == 0){
+			alert(`當前購物車內沒有產品，所以無法送出訂單 RRR ((((；゜Д゜)))`)
+		}
+		else{
+			createOrder(user);
+		}
+	}
+})
 
 // render function ----------------------------------------------------
 /**
@@ -253,11 +315,17 @@ function renderCartList(cartList) {
 		<td>${item.product.price}</td>
 		<td>
 			<div class="cartAmount">
-				<a href="javascript: void(0);" class="material-icons" data-editid="${item.id}" data-editnum="${item.quantity - 1}" data-edittitle="${item.product.title}">remove</a>
+				<a href="javascript: void(0);" class="material-icons" data-editid="${
+					item.id
+				}" data-editnum="${item.quantity - 1}" data-edittitle="${
+			item.product.title
+		}">remove</a>
 				${item.quantity}
-				<a href="javascript: void(0);" class="material-icons" data-editid="${item.id}" data-editnum="${
-					item.quantity + 1
-				}" data-edittitle="${item.product.title}">add</a>
+				<a href="javascript: void(0);" class="material-icons" data-editid="${
+					item.id
+				}" data-editnum="${item.quantity + 1}" data-edittitle="${
+			item.product.title
+		}">add</a>
 			</div>
 		</td>
 		<td>NT$${item.product.price * item.quantity}</td>
@@ -275,9 +343,19 @@ function renderCartList(cartList) {
 		<p>總金額</p>
 		</td>
 		<td>NT$${total}</td></tr>`;
-	// console.log(cartList);
-	if (cartList.length == 0) template = "";
-	shoppingCart.innerHTML = template;
+
+	if (cartList.length == 0) {
+		template =
+			"<div style='display: flex; justify-content: center; align-items: center; gap: 10px; flex-direction: column;'><p>購物車是空的？ 是在哈囉？ 還不快逛起來買起來！</p><a class='discardAllBtn scroll' href='#productList'>現在就去逛逛！</a></div>";
+		// 讓渲染出來的按鈕可以吃到scrollTo()
+		shoppingCart.innerHTML = "";
+		shoppingCart.insertAdjacentHTML("beforeend", template);
+		scrollTo();
+		shoppingCart.setAttribute('data-haveproduct', "0");
+	} else {
+		shoppingCart.innerHTML = template;
+		shoppingCart.setAttribute('data-haveproduct', "1");
+	}
 }
 
 /**
@@ -286,6 +364,8 @@ function renderCartList(cartList) {
 function init() {
 	getProductList();
 	getCartList();
+
+	document.getElementsByClassName('orderInfo-message').hidden
 }
 
 /**
@@ -295,86 +375,3 @@ window.onload = function () {
 	scrollTo();
 	init();
 };
-
-/**
- * [scrollTo 平緩滾動]
- */
-function scrollTo() {
-	const links = document.querySelectorAll(".scroll");
-	links.forEach((each) => (each.onclick = scrollAnchors));
-}
-function scrollAnchors(e, respond = null) {
-	const distanceToTop = (el) => Math.floor(el.getBoundingClientRect().top);
-	e.preventDefault();
-	var targetID = respond
-		? respond.getAttribute("href")
-		: this.getAttribute("href");
-	const targetAnchor = document.querySelector(targetID);
-	if (!targetAnchor) return;
-	const originalTop = distanceToTop(targetAnchor);
-	window.scrollBy({ top: originalTop - 120, left: 0, behavior: "smooth" });
-	const checkIfDone = setInterval(function () {}, 500);
-}
-
-/**
- * [addEventListener 推薦牆]
- */
-document.addEventListener("DOMContentLoaded", function () {
-	const ele = document.querySelector(".recommendation-wall");
-	ele.style.cursor = "grab";
-	let pos = { top: 0, left: 0, x: 0, y: 0 };
-	const mouseDownHandler = function (e) {
-		ele.style.cursor = "grabbing";
-		ele.style.userSelect = "none";
-
-		pos = {
-			left: ele.scrollLeft,
-			top: ele.scrollTop,
-			// Get the current mouse position
-			x: e.clientX,
-			y: e.clientY,
-		};
-
-		document.addEventListener("mousemove", mouseMoveHandler);
-		document.addEventListener("mouseup", mouseUpHandler);
-	};
-	const mouseMoveHandler = function (e) {
-		// How far the mouse has been moved
-		const dx = e.clientX - pos.x;
-		const dy = e.clientY - pos.y;
-
-		// Scroll the element
-		ele.scrollTop = pos.top - dy;
-		ele.scrollLeft = pos.left - dx;
-	};
-	const mouseUpHandler = function () {
-		ele.style.cursor = "grab";
-		ele.style.removeProperty("user-select");
-
-		document.removeEventListener("mousemove", mouseMoveHandler);
-		document.removeEventListener("mouseup", mouseUpHandler);
-	};
-	// Attach the handler
-	ele.addEventListener("mousedown", mouseDownHandler);
-});
-
-/**
- * [querySelector menu切換]
- */
-let menuOpenBtn = document.querySelector(".menuToggle");
-let linkBtn = document.querySelectorAll(".topBar-menu a");
-let menu = document.querySelector(".topBar-menu");
-menuOpenBtn.addEventListener("click", menuToggle);
-linkBtn.forEach((item) => {
-	item.addEventListener("click", closeMenu);
-});
-function menuToggle() {
-	if (menu.classList.contains("openMenu")) {
-		menu.classList.remove("openMenu");
-	} else {
-		menu.classList.add("openMenu");
-	}
-}
-function closeMenu() {
-	menu.classList.remove("openMenu");
-}
