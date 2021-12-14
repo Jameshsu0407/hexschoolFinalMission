@@ -215,7 +215,7 @@ body {
 }
 
 .topBar-menu.openMenu {
-	max-height: 300px;
+	max-height: 330px;
 }
 
 .topBar-menu a {
@@ -904,7 +904,7 @@ body {
 	left: 0;
 	display: block;
 	text-decoration: none;
-	color: #ffffff;
+	/* color: #ffffff; */
 }
 
 .orderStatus-unDone {
@@ -948,5 +948,16 @@ body {
 .cartAmount a:hover, .cartAmount a:active{
 	color: #301e5f;
 	transform: scale(1.3);
+}
+
+.chartWrap{
+	display: grid;
+	grid-template-columns: 50% 50%;
+}
+
+@media (max-width: 767px) {
+	.chartWrap{
+		grid-template-columns: 100%;
+	}
 }
 /*# sourceMappingURL=all.css.map */
