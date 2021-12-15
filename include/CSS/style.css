@@ -164,7 +164,7 @@ body {
 
 .topBar {
 	border-bottom: 40px solid #000000;
-	margin-bottom: 30px;
+	/* margin-bottom: 30px; */
 	background-color: #fff;
 	position: sticky;
 	top: 0;
@@ -804,6 +804,10 @@ body {
 	margin-right: 10px;
 }
 
+select{
+	-webkit-appearance: none;
+}
+
 .orderInfo-inputWrap {
 	position: relative;
 }
@@ -953,6 +957,7 @@ body {
 .chartWrap{
 	display: grid;
 	grid-template-columns: 50% 50%;
+	margin-top: 20px;
 }
 
 @media (max-width: 767px) {
@@ -960,4 +965,3 @@ body {
 		grid-template-columns: 100%;
 	}
 }
-/*# sourceMappingURL=all.css.map */

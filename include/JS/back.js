@@ -10,7 +10,7 @@ const token = "CAKwbIj95NgKmO5WkT345TSo3PB2";
 /**
  * [orderTable DOM-訂單表格]
  */
-const orderTable = document.querySelector('.orderPage-table');
+const orderTable = document.querySelector(".orderPage-table");
 
 // api function -------------------------------------------------------
 /**
@@ -23,19 +23,19 @@ function getProductList(allData) {
 		)
 		.then(function (response) {
 			productList = response.data.products;
-            let product = {}
-            let category = {}
+			let product = {};
+			let category = {};
 			productList.forEach((item) => {
-                // 品項名稱
-                if (!product[item.title]) {
-                    product[item.title] = 0;
-                } 
-                // 分類
-                if (!category[item.category]) {
-                    category[item.category] = 0;
-                } 
-            })
-            calcChart(product, category, allData)
+				// 品項名稱
+				if (!product[item.title]) {
+					product[item.title] = 0;
+				}
+				// 分類
+				if (!category[item.category]) {
+					category[item.category] = 0;
+				}
+			});
+			calcChart(product, category, allData);
 		})
 		.catch(function (error) {
 			// console.log(error.response.data.product);
@@ -57,12 +57,44 @@ function getOrderList() {
 		)
 		.then(function (response) {
 			let allData = response.data.orders;
-            renderOderList(allData)
-            getProductList(allData);
+			renderOderList(allData);
+			getProductList(allData);
+		});
+}
+
+/**
+ * [deleteOrderItem 刪除特定訂單]
+ * @param   {[type]}  orderId  [orderId 訂單編號]
+ */
+function deleteOrderItem(orderId) {
+	axios
+		.delete(
+			`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders/${orderId}`,
+			{
+				headers: {
+					Authorization: token,
+				},
+			}
+		)
+		.then(function (response) {
+			console.log(response.data);
+            alert(`訂單 ${orderId} 已刪除`)
+            getOrderList();
 		});
 }
 
 // calc function ------------------------------------------------------
+
+/**
+ * [addEventListener calc-刪除特定訂單]
+ */
+orderTable.addEventListener('click', (e) =>{
+    let orderId = e.target.dataset.orderid;
+	if (orderId != undefined) {
+        deleteOrderItem(orderId)
+	}
+})
+
 /**
  * [calcChart calc-計算圖表]
  *
@@ -71,24 +103,32 @@ function getOrderList() {
  * @param   {[object]}  allData   [allData 所有訂單資訊]
  */
 function calcChart(product, category, allData) {
-    // 算商品數量
-    allData.forEach((item) => {
-        item.products.forEach((item) => {
-            product[item.title] += parseInt(item.quantity)
-        })
+	// 算商品數量
+	allData.forEach((item) => {
+		item.products.forEach((item) => {
+			product[item.title] += parseInt(item.quantity);
+		});
+	});
+	// console.log(Object.entries(product))
+    product = Object.entries(product)
+    product = product.filter((item) => {
+        return item[1] > 0
     })
-    // console.log(Object.entries(product))
-    renderChart('#chart2', Object.entries(product))
+	renderChart("#chart2", product);
 
-    // 算分類數量
-    allData.forEach((item) => {
-        item.products.forEach((item) => {
-            // console.log(item.category)
-            category[item.category] += parseInt(item.quantity)
-        })
+	// 算分類數量
+	allData.forEach((item) => {
+		item.products.forEach((item) => {
+			// console.log(item.category)
+			category[item.category] += parseInt(item.quantity);
+		});
+	});
+	// console.log(Object.entries(category))
+    category = Object.entries(category)
+    category = category.filter((item) => {
+        return item[1] > 0
     })
-    // console.log(Object.entries(category))
-    renderChart('#chart1', Object.entries(category))
+	renderChart("#chart1", category);
 }
 
 // render function ----------------------------------------------------
@@ -108,13 +148,13 @@ function renderOderList(oderList) {
     <th>操作</th>
     </tr></thead>`;
 	oderList.forEach((item) => {
-		let productsInfo = ``
-        item.products.forEach((item) => {
-            productsInfo += `<li>${item.title} ${item.quantity} 個</li>`
-        })
-        let date = new Date(item.createdAt* 1000).toLocaleDateString();
+		let productsInfo = ``;
+		item.products.forEach((item) => {
+			productsInfo += `<li>${item.title} ${item.quantity} 個</li>`;
+		});
+		let date = new Date(item.createdAt * 1000).toLocaleDateString();
 
-        template += `<tr>
+		template += `<tr>
         <td>${item.createdAt}</td>
         <td>
         <p>${item.user.name}</p>
@@ -128,10 +168,10 @@ function renderOderList(oderList) {
         <td>${date}</td>
         <td class="orderStatus"><a href="#">未處理</a></td>
         <td>
-        <input class="delSingleOrder-Btn" type="button" value="刪除">
+        <input class="delSingleOrder-Btn" type="button" value="刪除" data-orderid="${item.id}">
         </td></tr>`;
 	});
-    orderTable.innerHTML = template;
+	orderTable.innerHTML = template;
 }
 
 /**
@@ -140,34 +180,37 @@ function renderOderList(oderList) {
  * @param   {[type]}  data    [data 圖表要的資料]
  */
 function renderChart(bindId, data) {
-    c3.generate({
-        bindto: bindId,
-        data: {
-            type: "pie",
-            columns: data,
-        },
-        color: {
-            pattern: ['#5a189a', '#7b2cbf', '#9d4edd', '#c77dff', '#ffc4d6', '#ffa6c1', '#ff87ab', '#ff5d8f', ]
-        }
-        
-    });
+	c3.generate({
+		bindto: bindId,
+		data: {
+			type: "pie",
+			columns: data,
+		},
+		color: {
+			pattern: [
+				"#5a189a",
+				"#7b2cbf",
+				"#9d4edd",
+				"#c77dff",
+				"#ffc4d6",
+				"#ffa6c1",
+				"#ff87ab",
+				"#ff5d8f",
+			],
+		},
+	});
 }
 
 /**
  * [init 初始化]
  */
 function init() {
-    getOrderList();
+	getOrderList();
 }
 
 /**
  * [onload 畫面loading完後執行]
  */
 window.onload = function () {
-	scrollTo();
 	init();
-    getProductList()
 };
-
-
-

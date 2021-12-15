@@ -5,17 +5,28 @@ function scrollTo() {
 	const links = document.querySelectorAll(".scroll");
 	links.forEach((each) => (each.onclick = scrollAnchors));
 }
+
 function scrollAnchors(e, respond = null) {
-	const distanceToTop = (el) => Math.floor(el.getBoundingClientRect().top);
 	e.preventDefault();
+	const time = 1000; // you can change this value
+
+	const distanceToTop = (el) => Math.floor(el.getBoundingClientRect().top);
 	var targetID = respond
 		? respond.getAttribute("href")
 		: this.getAttribute("href");
 	const targetAnchor = document.querySelector(targetID);
 	if (!targetAnchor) return;
-	const originalTop = distanceToTop(targetAnchor);
-	window.scrollBy({ top: originalTop - 120, left: 0, behavior: "smooth" });
-	const checkIfDone = setInterval(function () {}, 500);
+	var eTop = distanceToTop(targetAnchor) - 120;
+	var eAmt = eTop / 100;
+	var curTime = 0;
+	while (curTime <= time) {
+		window.setTimeout(scrollSmoth, curTime, eAmt);
+		curTime += time / 100;
+	}
+}
+
+function scrollSmoth(eAmt) {
+	window.scrollBy(0, eAmt);
 }
 
 /**
@@ -80,3 +91,10 @@ function menuToggle() {
 function closeMenu() {
 	menu.classList.remove("openMenu");
 }
+
+/**
+ * [onload 畫面loading完後執行]
+ */
+window.onload = function () {
+	scrollTo();
+};

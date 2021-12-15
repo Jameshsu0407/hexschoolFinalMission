@@ -232,6 +232,9 @@ shoppingCart.addEventListener("click", (e) => {
 	}
 });
 
+/**
+ * [addEventListener 送出訂單]
+ */
 subOderBtn.addEventListener('click', () => {
 	let user = {};
 	const name = document.querySelector('#customerName').value
@@ -365,13 +368,13 @@ function init() {
 	getProductList();
 	getCartList();
 
-	document.getElementsByClassName('orderInfo-message').hidden
+	// document.getElementsByClassName('orderInfo-message').hidden
 }
 
 /**
  * [onload 畫面loading完後執行]
  */
 window.onload = function () {
-	scrollTo();
 	init();
 };
+
