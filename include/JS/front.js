@@ -182,7 +182,7 @@ function filterOption(allData) {
 	renderProductSelect(category);
 
 	// 點擊productSelect
-	productSelect.addEventListener("click", (e) => {
+	productSelect.addEventListener("change", (e) => {
 		let target = e.target.value;
 		let filterData = allData.filter((item) => {
 			return target == item.category;
@@ -293,6 +293,7 @@ function renderProductSelect(category) {
 		template += `<option value="${item}">${item}</option>`;
 	});
 	productSelect.innerHTML = template;
+
 }
 
 /**
