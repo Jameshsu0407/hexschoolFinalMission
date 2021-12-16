@@ -11,6 +11,14 @@ const token = "CAKwbIj95NgKmO5WkT345TSo3PB2";
  * [orderTable DOM-訂單表格]
  */
 const orderTable = document.querySelector(".orderPage-table");
+/**
+ * [querySelector DOM-刪除所有訂單按鈕]
+ */
+const delAllOderBtn = document.querySelector(".delAllOderBtn");
+/**
+ * [querySelector DOM-訂單狀態按鈕]
+ */
+const orderStatusBtn = document.querySelector(".orderStatusBtn")
 
 // api function -------------------------------------------------------
 /**
@@ -57,13 +65,34 @@ function getOrderList() {
 		)
 		.then(function (response) {
 			let allData = response.data.orders;
+			// console.log(allData)
 			renderOderList(allData);
 			getProductList(allData);
 		});
 }
 
 /**
- * [deleteOrderItem 刪除特定訂單]
+ * [deleteAllOrder api-刪除全部訂單]
+ */
+function deleteAllOrder() {
+	axios
+		.delete(
+			`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
+			{
+				headers: {
+					Authorization: token,
+				},
+			}
+		)
+		.then(function (response) {
+			console.log(response.data);
+			alert(`所有的訂單已刪除`);
+			getOrderList();
+		});
+}
+
+/**
+ * [deleteOrderItem api-刪除特定訂單]
  * @param   {[type]}  orderId  [orderId 訂單編號]
  */
 function deleteOrderItem(orderId) {
@@ -78,22 +107,66 @@ function deleteOrderItem(orderId) {
 		)
 		.then(function (response) {
 			console.log(response.data);
-            alert(`訂單 ${orderId} 已刪除`)
-            getOrderList();
+			alert(`訂單 ${orderId} 已刪除`);
+			getOrderList();
+		});
+}
+
+// 
+/**
+ * [editOrderList api-修改訂單狀態]
+ * @param   {[string]}  orderId  [orderId 訂單編號]
+ * @param   {[boolean]}  paid  [paid 付款狀態]
+ */
+function editOrderList(orderId, paid) {
+	axios
+		.put(
+			`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
+			{
+				data: {
+					id: orderId,
+					paid: paid,
+				},
+			},
+			{
+				headers: {
+					Authorization: token,
+				},
+			}
+		)
+		.then(function (response) {
+			console.log(response.data);
+			getOrderList();
 		});
 }
 
 // calc function ------------------------------------------------------
 
 /**
- * [addEventListener calc-刪除特定訂單]
+ * [addEventListener 刪除整筆訂單]
  */
-orderTable.addEventListener('click', (e) =>{
-    let orderId = e.target.dataset.orderid;
+delAllOderBtn.addEventListener("click", (e) => {
+	deleteAllOrder();
+});
+
+/**
+ * [addEventListener calc-點擊渲染後的訂單表格]
+ */
+orderTable.addEventListener("click", (e) => {
+	// 刪除特定訂單
+	let orderId = e.target.dataset.orderid;
 	if (orderId != undefined) {
-        deleteOrderItem(orderId)
+		deleteOrderItem(orderId);
 	}
-})
+
+	// 修改訂單狀態
+	let paidStatus = (e.target.dataset.paid) === "true";
+	let paidId = e.target.dataset.paidid;
+	console.log(paidStatus)
+	if(paidStatus != undefined && paidId != undefined){
+		editOrderList(paidId, paidStatus)
+	}
+});
 
 /**
  * [calcChart calc-計算圖表]
@@ -110,10 +183,10 @@ function calcChart(product, category, allData) {
 		});
 	});
 	// console.log(Object.entries(product))
-    product = Object.entries(product)
-    product = product.filter((item) => {
-        return item[1] > 0
-    })
+	product = Object.entries(product);
+	product = product.filter((item) => {
+		return item[1] > 0;
+	});
 	renderChart("#chart2", product);
 
 	// 算分類數量
@@ -124,10 +197,10 @@ function calcChart(product, category, allData) {
 		});
 	});
 	// console.log(Object.entries(category))
-    category = Object.entries(category)
-    category = category.filter((item) => {
-        return item[1] > 0
-    })
+	category = Object.entries(category);
+	category = category.filter((item) => {
+		return item[1] > 0;
+	});
 	renderChart("#chart1", category);
 }
 
@@ -148,29 +221,53 @@ function renderOderList(oderList) {
     <th>操作</th>
     </tr></thead>`;
 	oderList.forEach((item) => {
+		// 計算該訂單有幾個商品
 		let productsInfo = ``;
 		item.products.forEach((item) => {
 			productsInfo += `<li>${item.title} ${item.quantity} 個</li>`;
 		});
+		// 日期
 		let date = new Date(item.createdAt * 1000).toLocaleDateString();
-
+		let time = new Date(item.createdAt * 1000).toLocaleTimeString([], {
+			hour12: false,
+			hour: "2-digit",
+			minute: "2-digit",
+		});
+		// 付款狀態
+		let paidText = ""
+		if(item.paid == true) {
+			paidText = '已付款';
+			item.paid = false;
+		}
+		else if (item.paid == false){
+			paidText = '未處理';
+			item.paid = true;
+		}
+		console.log(item.paid)
 		template += `<tr>
-        <td>${item.createdAt}</td>
+        <td>${item.id}</td>
         <td>
         <p>${item.user.name}</p>
-        <p>${item.user.tel}</p>
+        <p><a href="tel: ${item.user.tel}">${item.user.tel}</a></p>
         </td>
         <td>${item.user.address}</td>
-        <td>${item.user.email}</td>
+        <td><a href="mailto:${item.user.email}">${item.user.email}</a></td>
         <td>
         <p><ul>${productsInfo}</ul></p>
         </td>
-        <td>${date}</td>
-        <td class="orderStatus"><a href="#">未處理</a></td>
+        <td><p>${date}</p><p>${time}</p></td>
+        <td class="orderStatus"><a href="javascript: void(0)" class="orderStatusBtn"  data-paid="${item.paid}" data-paidid="${item.id}">${paidText}</a></td>
         <td>
         <input class="delSingleOrder-Btn" type="button" value="刪除" data-orderid="${item.id}">
         </td></tr>`;
 	});
+	// 沒有訂單
+	if (oderList.length == 0) {
+		delAllOderBtn.style.display = "none";
+		template = `<thead><tr><th>沒有訂單資料</th></tr></thead>`;
+	} else {
+		delAllOderBtn.style.display = "block";
+	}
 	orderTable.innerHTML = template;
 }
 
@@ -206,6 +303,7 @@ function renderChart(bindId, data) {
  */
 function init() {
 	getOrderList();
+	
 }
 
 /**

@@ -293,7 +293,6 @@ function renderProductSelect(category) {
 		template += `<option value="${item}">${item}</option>`;
 	});
 	productSelect.innerHTML = template;
-
 }
 
 /**

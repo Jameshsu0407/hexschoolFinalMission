@@ -219,7 +219,7 @@ body {
 }
 
 .topBar-menu a {
-	padding: 36px 24px;
+	padding: 15px;
 	background-color: #ffffff;
 }
 
@@ -280,7 +280,7 @@ body {
 }
 
 .logo {
-	padding: 36px 0;
+	padding: 15px 0;
 	font-size: 1.5rem;
 }
 
@@ -874,6 +874,7 @@ select{
 	padding: 10px;
 	text-align: left;
 	border: 1px solid #000000;
+	white-space: nowrap;
 }
 
 @media (max-width: 1110px) {
