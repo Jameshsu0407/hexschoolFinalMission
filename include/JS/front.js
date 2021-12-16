@@ -24,9 +24,51 @@ const shoppingCart = document.querySelector(".shoppingCart-table");
  */
 const oderForm = document.querySelector(".orderInfo-form");
 /**
+ * [querySelectorAll DOM-所有的填寫訂單欄位]
+ */
+const oderInput = document.querySelectorAll(".orderInfo-input");
+/**
  * [subOderBtn DOM-送出訂單按鈕]
  */
-const subOderBtn = document.querySelector(".orderInfo-btn")
+const subOderBtn = document.querySelector(".orderInfo-btn");
+/**
+ * [constraints 驗證格式規範]
+ */
+const constraints = {
+	姓名: {
+		presence: {
+			message: "是必填欄位",
+		},
+	},
+	電話: {
+		presence: {
+			message: "是必填欄位",
+		},
+		length: {
+			minimum: 8,
+			message: "至少要8碼以上",
+		},
+	},
+	Email: {
+		presence: {
+			message: "是必填欄位",
+		},
+		email: {
+			email: true,
+			message: "格式不正確",
+		},
+	},
+	寄送地址: {
+		presence: {
+			message: "是必填欄位",
+		},
+	},
+	交易方式: {
+		presence: {
+			message: "是必填欄位",
+		},
+	},
+};
 
 // api function -------------------------------------------------------
 /**
@@ -138,7 +180,7 @@ function editCartNum(editId, editNum) {
 }
 
 /**
- * [createOrder 建立訂單]
+ * [createOrder api-建立訂單]
  *
  * @param   {[object]}  user  [user 訂單資料]
  */
@@ -193,7 +235,7 @@ function filterOption(allData) {
 }
 
 /**
- * [addEventListener 點擊加入購物車]
+ * [addEventListener calc-點擊商品加入購物車]
  */
 productWrap.addEventListener("click", (e) => {
 	let productId = e.target.dataset.id;
@@ -204,7 +246,7 @@ productWrap.addEventListener("click", (e) => {
 });
 
 /**
- * [addEventListener 點擊購物車]
+ * [addEventListener calc-點擊購物車]
  */
 shoppingCart.addEventListener("click", (e) => {
 	// 清空購物車
@@ -233,39 +275,56 @@ shoppingCart.addEventListener("click", (e) => {
 });
 
 /**
- * [addEventListener 送出訂單]
+ * [subOder calc-送出訂單]
  */
-subOderBtn.addEventListener('click', () => {
-	let user = {};
-	const name = document.querySelector('#customerName').value
-	const phone = document.querySelector('#customerPhone').value
-	const email = document.querySelector('#customerEmail').value
-	const address = document.querySelector('#customerAddress').value
-	const tradeWay = document.querySelector('#tradeWay').value
-	if(
-		name == "" || phone == "" || email == "" || address == "" || tradeWay == ""
-	){
-		alert('訂單資料填寫不完全')
-	}
-	else {
-		user.name = name;
-		user.tel = phone;
-		user.email = email;
-		user.address = address;
-		user.payment = tradeWay;
-		// 判斷購物車裡是否有商品
-		if(shoppingCart.dataset.haveproduct == 0){
-			alert(`當前購物車內沒有產品，所以無法送出訂單 RRR ((((；゜Д゜)))`)
-		}
-		else{
+function subOder() {
+	subOderBtn.addEventListener("click", () => {
+		let success = 0
+		// 驗證格式並將報錯選染畫面
+		oderInput.forEach((item) => {
+			item.nextElementSibling.textContent = "";
+			let errors = validate(oderForm, constraints);
+			if (errors) {
+				Object.keys(errors).forEach((keys) => {
+					document.querySelector(`[data-message= "${keys}"]`).textContent =
+						errors[keys];
+				});
+			} 
+			else {
+				success++
+			}
+		});
+
+		// 送出訂單
+		// 所有欄位皆填寫
+		if(success == 5) {
+			let user = {};
+			const name = document.querySelector("#customerName").value.trim().toLowerCase();
+			const phone = document.querySelector("#customerPhone").value.trim().toLowerCase();
+			const email = document.querySelector("#customerEmail").value.trim().toLowerCase();
+			const address = document.querySelector("#customerAddress").value.trim().toLowerCase();
+			const tradeWay = document.querySelector("#tradeWay").value.trim().toLowerCase();
+
+			user.name = name;
+			user.tel = phone;
+			user.email = email;
+			user.address = address;
+			user.payment = tradeWay;
+
+			// 判斷購物車裡是否有商品
+			if(shoppingCart.dataset.haveproduct == 0) {
+				alert(`當前購物車內沒有產品，所以無法送出訂單 RRR ((((；゜Д゜)))`);
+				return
+			}
+			// 送出訂單
 			createOrder(user);
 		}
-	}
-})
+	});
+}
 
 // render function ----------------------------------------------------
 /**
- * [renderProduct 選染商品]
+ * [renderProduct render-選染商品]
  * @param   {[object]}  product  [要渲染的商品]
  */
 function renderProduct(product) {
@@ -284,7 +343,7 @@ function renderProduct(product) {
 }
 
 /**
- * [renderProductSelect 渲染篩選分類]
+ * [renderProductSelect render-渲染篩選分類]
  * @param   {[array]}  category  [category 篩選過的商品]
  */
 function renderProductSelect(category) {
@@ -296,7 +355,7 @@ function renderProductSelect(category) {
 }
 
 /**
- * [renderCartList 渲染購物車]
+ * [renderCartList render-渲染購物車]
  * @param   {[object}  cartList  [cartList 購物車商品]
  */
 function renderCartList(cartList) {
@@ -354,12 +413,13 @@ function renderCartList(cartList) {
 		shoppingCart.innerHTML = "";
 		shoppingCart.insertAdjacentHTML("beforeend", template);
 		scrollTo();
-		shoppingCart.setAttribute('data-haveproduct', "0");
+		shoppingCart.setAttribute("data-haveproduct", "0");
 	} else {
 		shoppingCart.innerHTML = template;
-		shoppingCart.setAttribute('data-haveproduct', "1");
+		shoppingCart.setAttribute("data-haveproduct", "1");
 	}
 }
+
 
 /**
  * [init 初始化]
@@ -367,8 +427,7 @@ function renderCartList(cartList) {
 function init() {
 	getProductList();
 	getCartList();
-
-	// document.getElementsByClassName('orderInfo-message').hidden
+	subOder();
 }
 
 /**
@@ -377,4 +436,3 @@ function init() {
 window.onload = function () {
 	init();
 };
-

@@ -143,7 +143,7 @@ function editOrderList(orderId, paid) {
 // calc function ------------------------------------------------------
 
 /**
- * [addEventListener 刪除整筆訂單]
+ * [addEventListener calc-刪除整筆訂單]
  */
 delAllOderBtn.addEventListener("click", (e) => {
 	deleteAllOrder();
@@ -206,7 +206,7 @@ function calcChart(product, category, allData) {
 
 // render function ----------------------------------------------------
 /**
- * [renderOderList 渲染訂單表格]
+ * [renderOderList render-渲染訂單表格]
  * @param   {[object]}  oderList  [oderList 訂單資料]
  */
 function renderOderList(oderList) {
@@ -272,7 +272,7 @@ function renderOderList(oderList) {
 }
 
 /**
- * [renderChart 渲染圖表]
+ * [renderChart render-渲染圖表]
  * @param   {[type]}  bindId  [bindId 要綁定的DOM]
  * @param   {[type]}  data    [data 圖表要的資料]
  */
@@ -297,6 +297,7 @@ function renderChart(bindId, data) {
 		},
 	});
 }
+
 
 /**
  * [init 初始化]
