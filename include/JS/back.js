@@ -182,11 +182,25 @@ function calcChart(product, category, allData) {
 			product[item.title] += parseInt(item.quantity);
 		});
 	});
-	// console.log(Object.entries(product))
+	
 	product = Object.entries(product);
-	product = product.filter((item) => {
-		return item[1] > 0;
-	});
+
+	// 排序：由大排到小
+	product.sort((a, b)=> {
+		return b[1] - a[1]
+	})
+	
+	// 加入其他分類
+	let temp = 0
+	product = product.filter((item, index)=> {
+		if(index <= 2){
+			return item
+		}
+		else{
+			temp += item[1]
+		}
+	})
+	product.push(["其他", temp])
 	renderChart("#chart2", product);
 
 	// 算分類數量
@@ -243,7 +257,7 @@ function renderOderList(oderList) {
 			paidText = '未處理';
 			item.paid = true;
 		}
-		console.log(item.paid)
+		// console.log(item.paid)
 		template += `<tr>
         <td>${item.id}</td>
         <td>
